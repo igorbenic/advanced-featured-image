@@ -1,18 +1,25 @@
-jQuery(function($){
 
+( function( $ ) {
+   
+	var afi_custom_image_container	= $( '.custom-img-container' );
+	var afi_delete_custom_image		= $( '.delete-custom-img' );
+	var afi_upload_custom_image		= $( '.upload-custom-img' );
+	
 	function set_uploader( button, field ) {
-
+		var button_to_click = $( button );
+		var field_to_insert = $( field );
 		// make sure both button and field are in the DOM
-		if( jQuery( button ) && jQuery( field ) ) {
+		if( button_to_click && field_to_insert ){ 
 			// when button is clicked show thick box
-			jQuery( button ).click(function() {
+		
+			$(document).on('click', button, function() {
 				tb_show( '', 'media-upload.php?type=image&TB_iframe=true' );
 
 				// when the thick box is opened set send to editor button
 				set_send( field );
-				return false;
-			});
-		}
+				 
+			} );
+	    }
 
 	}
 
@@ -23,19 +30,20 @@ jQuery(function($){
 		// override function so you can have multiple uploaders pre page
 		window.send_to_editor = function( html ) {
 
-			 
-			imgurl = $( 'img', html ).attr( 'src' );
-			//If imgurl is undefined, then there is only one img from link
-			if( typeof imgurl == 'undefined' ){
+			
+			var image_url = $( 'img', html ).attr( 'src' );
 
-				imgurl = $( html ).attr( 'src' );
+			//If imgurl is undefined, then there is only one img from link
+			if( undefined === $image_url ){
+
+				image_url = $( html ).attr( 'src' );
 
 			}
 
-			$( field ).val( imgurl );
-			$( ".custom-img-container" ).append( "<img src='" + imgurl + "' style='max-width:100%;' />" );
-			$( ".delete-custom-img" ).removeClass( "hidden" );
-			$( ".upload-custom-img" ).addClass( "hidden" );
+			$( field ).val( image_url );
+			afi_custom_image_container.append( '<img src="' + image_url + '"" style="max-width:100%;" />' );
+			afi_delete_custom_image.removeClass( 'hidden' );
+			afi_upload_custom_image.addClass( 'hidden' );
 			tb_remove();
 
 
@@ -44,26 +52,24 @@ jQuery(function($){
 		};
 	}
 
-	function remove_img( button ){
+	function remove_image( button ){
 
-		jQuery( button ).click( function(){
+		$( button ).click( function(){
 
-			$( ".custom-img-container" ).children( "img" ).remove();
+			afi_custom_image_container.children( 'img' ).remove();
 
-			$( ".afi-img-id" ).val("");
+			$( '.afi-img-id' ).val( '' );
 			 
-			$( ".delete-custom-img" ).addClass( "hidden" );
+			afi_delete_custom_image.addClass( 'hidden' );
 
-			$( ".upload-custom-img" ).removeClass( "hidden" );
-
-			return false;
+			afi_upload_custom_image.removeClass( 'hidden' );
 
 		});
 
 	}
 
-	set_uploader(".upload-custom-img", ".afi-img-id");
-	remove_img(".delete-custom-img");
+	set_uploader( '.upload-custom-img', '.afi-img-id' );
+	remove_image( '.delete-custom-img' );
 
     
-});
+})( jQuery );
