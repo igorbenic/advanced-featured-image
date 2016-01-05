@@ -25,38 +25,39 @@ function afi_metabox( $content, $postID ) {
 	
 	//Get the Image Source
 	$imgURL = get_post_meta( $postID, '_afi_img_src', true );
-	 
+	
+
 	// Start the new metabox HTML
-	$content = '<div class="custom-img-container">';
+	$content = '<div id="custom_image_container">';
 
-	   if ( $imgURL ){  
-     	
-     		$content .= "<img src='$imgURL' alt='' style='max-width:100%;'' />";
+   	if ( $imgURL ){  
+ 	
+ 		$content .= '<img src="' . $imgURL . '" alt="" style="max-width:100%;" />';
 
-        }
+    }
 
 	$content .= '</div>' ;
 
 	// Your add & remove image links 
 	$content .= '<p class="hide-if-no-js">';
 
-	    $content .= '<a class="upload-custom-img ' . ( ( $imgURL  ) ? 'hidden' : '' ) . '"'; 
+	$content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imgURL  ) ? 'hidden' : '' ) . '"'; 
 
-	       $content .= ' href="#">';
+	$content .= ' href="#">';
 
-	        $content .= __( 'Set custom image', 'wordpress' );
+	$content .= __( 'Set custom image', 'wordpress' );
 
-	    $content .= ' </a>';
+	$content .= ' </a>';
 
-	     $content .= '<a class="delete-custom-img ' . ( ( ! $imgURL  ) ? 'hidden' : ''  ) . '" ';
+	$content .= '<a class="delete-custom-img ' . ( ( ! $imgURL  ) ? 'hidden' : ''  ) . '" ';
 
-	       $content .= 'href="#">';
+	$content .= 'href="#">';
 
-	         $content .= __( 'Remove this image', 'wordpress' );
+	$content .= __( 'Remove this image', 'wordpress' );
 
-	     $content .= '</a>';
+	$content .= '</a>';
 
-	 $content .= '</p>';
+	$content .= '</p>';
 
 	//<!-- A hidden input to set and post the chosen image URL-->
 	$content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imgURL ) . '" />';
@@ -73,9 +74,10 @@ function afi_metabox( $content, $postID ) {
 function afi_scripts($hook) {
     
 
-    wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array('jquery') );
+    wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), true );
 
 }
+
 add_action( 'admin_enqueue_scripts', 'afi_scripts' );
 
 /**
@@ -83,13 +85,10 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
  * @param  number $post_id ID of the post 
  */
 function afi_save_thumbnail( $post_id ) {
-
-	 
 	   
 	$imgURL = $_POST['afi-img-src'];
 
 	$imgID = afi_get_attachment_id_from_url( $imgURL );
-
 
 	// Current site ID
 	$currentBlogID = get_current_blog_id();
@@ -167,7 +166,7 @@ function afi_save_thumbnail( $post_id ) {
 	    }
 
 	   
-     }
+    }
      
     // If we have switched to the other site, return to the current one 
     if ( $switchedBlog ) {
@@ -318,34 +317,34 @@ add_filter( 'post_thumbnail_html', 'afi_post_thumbnail_html', 99, 5 );
 function afi_deactivate() {
 
  
-		global $wpdb, $blog_id;
+	global $wpdb, $blog_id;
 
 
-		// Delete from Multisite if the multisite is enabled
-		if ( is_multisite() ) {
+	// Delete from Multisite if the multisite is enabled
+	if ( is_multisite() ) {
 
-			// Query to select IDs from all sites
-	        $dbquery = "SELECT blog_id FROM $wpdb->blogs";
+		// Query to select IDs from all sites
+        $dbquery = "SELECT blog_id FROM $wpdb->blogs";
 
-	        // IDs from all sites
-	        $ids = $wpdb->get_col( $dbquery );
+        // IDs from all sites
+        $ids = $wpdb->get_col( $dbquery );
 
-	         
-	        foreach ( $ids as $id ) {
+         
+        foreach ( $ids as $id ) {
 
-	            switch_to_blog( $id );
+            switch_to_blog( $id );
 
-	            afi_delete_from_site();
-	        }
-
-	    	// Get back to the original site
- 			switch_to_blog( $blog_id );
-
-        } else {
-
-        	afi_delete_from_site();
-
+            afi_delete_from_site();
         }
+
+    	// Get back to the original site
+			switch_to_blog( $blog_id );
+
+    } else {
+
+    	afi_delete_from_site();
+
+    }
 
 
 }
