@@ -20,21 +20,19 @@ add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2);
  * @return string          		Content for the featured image
  */
 function afi_metabox( $content, $postID ) {
-        
-         
-	
+    
 	//Get the Image Source
 	$imageURL = get_post_meta( $postID, '_afi_img_src', true );
-	
+
 
 	// Start the new metabox HTML
 	$content = '<div id="custom_image_container">';
 
-   	if ( $imageURL ){  
- 	
- 		$content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
+	if ( $imageURL ){  
+		
+		$content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
 
-    }
+	}
 
 	$content .= '</div>' ;
 
@@ -63,7 +61,7 @@ function afi_metabox( $content, $postID ) {
 	$content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imageURL ) . '" />';
 
 
-    return $content;
+	return $content;
 		
 }
 
@@ -71,10 +69,9 @@ function afi_metabox( $content, $postID ) {
  * Enqueue the script
  * @param  string $hook Name of the hook / file we are on 
  */
-function afi_scripts($hook) {
-    
+function afi_scripts( $hook ) {  
 
-    wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), true );
+	wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), true );
 
 }
 
