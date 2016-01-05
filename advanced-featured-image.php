@@ -24,15 +24,15 @@ function afi_metabox( $content, $postID ) {
          
 	
 	//Get the Image Source
-	$imgURL = get_post_meta( $postID, '_afi_img_src', true );
+	$imageURL = get_post_meta( $postID, '_afi_img_src', true );
 	
 
 	// Start the new metabox HTML
 	$content = '<div id="custom_image_container">';
 
-   	if ( $imgURL ){  
+   	if ( $imageURL ){  
  	
- 		$content .= '<img src="' . $imgURL . '" alt="" style="max-width:100%;" />';
+ 		$content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
 
     }
 
@@ -41,7 +41,7 @@ function afi_metabox( $content, $postID ) {
 	// Your add & remove image links 
 	$content .= '<p class="hide-if-no-js">';
 
-	$content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imgURL  ) ? 'hidden' : '' ) . '"'; 
+	$content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"'; 
 
 	$content .= ' href="#">';
 
@@ -49,7 +49,7 @@ function afi_metabox( $content, $postID ) {
 
 	$content .= ' </a>';
 
-	$content .= '<a class="delete-custom-img ' . ( ( ! $imgURL  ) ? 'hidden' : ''  ) . '" ';
+	$content .= '<a class="delete-custom-img ' . ( ( ! $imageURL  ) ? 'hidden' : ''  ) . '" ';
 
 	$content .= 'href="#">';
 
@@ -60,7 +60,7 @@ function afi_metabox( $content, $postID ) {
 	$content .= '</p>';
 
 	//<!-- A hidden input to set and post the chosen image URL-->
-	$content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imgURL ) . '" />';
+	$content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imageURL ) . '" />';
 
 
     return $content;
@@ -86,9 +86,9 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
  */
 function afi_save_thumbnail( $post_id ) {
 	   
-	$imgURL = $_POST['afi-img-src'];
+	$imageURL = $_POST['afi-img-src'];
 
-	$imgID = afi_get_attachment_id_from_url( $imgURL );
+	$imageID = afi_get_attachment_id_from_url( $imageURL );
 
 	// Current site ID
 	$currentBlogID = get_current_blog_id();
@@ -97,7 +97,7 @@ function afi_save_thumbnail( $post_id ) {
     $switchedBlog = false;
 
 	// If the imgID was not found, we need to look on other blog sites. 
-	if( !$imgID ) {
+	if( ! $imageID ) {
 
 	 	global $wpdb;
 
@@ -106,7 +106,7 @@ function afi_save_thumbnail( $post_id ) {
       
 	 	foreach ( $blogList as $blog ) {
 
-	 		// If the loop is for the current site, we can skip that since we already know that the $imgID for that site is null
+	 		// If the loop is for the current site, we can skip that since we already know that the $imageID for that site is null
 	 		if ( $blog['blog_id'] == $currentBlogID ) {
 
 	 			continue;
@@ -119,13 +119,13 @@ function afi_save_thumbnail( $post_id ) {
 	 		$switchedBlog = true;
 
 	 		// Get the image ID on that site
-	 		$imgID = afi_get_attachment_id_from_url( $imgURL );
+	 		$imageID = afi_get_attachment_id_from_url( $imageURL );
 
 	 		/*
 	 		 * If we have found an ID, then we have found the image
 	 		 * Break from the loop if the image was found, otherwise continue searching
 	 		 */
-	 		if ( $imgID != false ) {
+	 		if ( $imageID != false ) {
 
 	 			break;
 	 		}
@@ -136,13 +136,13 @@ function afi_save_thumbnail( $post_id ) {
     $images = array();
      
     // If there is an attachment we can get different sizes
-    if ( $imgID != false ) {
+    if ( false != $imageID ) {
 
      	// Get MetaData for that attachment ID
-     	$imageMetaData = wp_get_attachment_metadata( $imgID );	     
+     	$imageMetaData = wp_get_attachment_metadata( $imageID );	     
 
      	// Original Image
-     	$imageFull = wp_get_attachment_image_src( $imgID, 'full' );
+     	$imageFull = wp_get_attachment_image_src( $imageID, 'full' );
 	     
 	    // Adding to array $images a size with its values
 	    $images['full'] = array(
@@ -155,7 +155,7 @@ function afi_save_thumbnail( $post_id ) {
 		// For each size in the $imageMetaData of that image, add corresponding values to the array $images
  		foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
-	     	$image = wp_get_attachment_image_src( $imgID, $size );
+	     	$image = wp_get_attachment_image_src( $imageID, $size );
 
 	     	$images[ $size ] = array(
 	     		'url'    => $image[0],
@@ -178,7 +178,7 @@ function afi_save_thumbnail( $post_id ) {
 	// Save our data
     update_post_meta( $post_id, '_afi_image', $images );
 
-	update_post_meta( $post_id, '_afi_img_src', $imgURL );
+	update_post_meta( $post_id, '_afi_img_src', $imageURL );
 
 	// Fake the thumbnail_id so the has_post_thumbnail works as intended on other sites
 	update_post_meta( $post_id, '_thumbnail_id', '1' );
@@ -235,19 +235,19 @@ function afi_get_attachment_id_from_url( $attachment_url = '' ) {
  * @param  array 		$attr              
  * @return string                    
  */
-function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attr ) {
+function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attributes ) {
 
 	// If the variable $attr is not an array, make it an array
-    if ( ! is_array( $attr ) ) {
+    if ( ! is_array( $attributes ) ) {
 	 			
-	 	$attr = array();
+	 	$attributes = array();
 
 	}
 
 	// If the attribute "class" is not set, set it
-	if ( ! isset( $attr['class'] ) ) {
+	if ( ! isset( $attributes['class'] ) ) {
 
-	 	$attr['class'] =  'wp-post-image attachment-'.$size;
+	 	$attributes['class'] =  'wp-post-image attachment-' . $size;
 
 	}  
 
@@ -255,7 +255,7 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 	// Get all the data of the image we have saved
 	$images = get_post_meta( $post_id, '_afi_image', true );
 	 
-	$imgURL = "";
+	$imageURL = "";
     
     // Check if is an array. If not then we have saved an image from URL
 	if ( $images && is_array( $images ) && count( $images ) > 0 ) {
@@ -263,11 +263,11 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 		// Get Image array from the requsted size
 		$image = $images[ $size ];
 		
-		$imgURL = $image['url'];
+		$imageURL = $image['url'];
 
 		// Setting the width and height attributes
-		$attr['width']  = $image['width'];
-		$attr['height'] = $image['height'];
+		$attributes['width']  = $image['width'];
+		$attributes['height'] = $image['height'];
 
 	} else {
 		
@@ -275,35 +275,35 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 		 * If we do not have an array in $image or is empty, then this is an image provided from URL
 		 * Get only the SRC
 		 */
-		$imgURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
+		$imageURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
 
 	}
 	
 	// Start the Tag
-	$imgTag = '<img ';
+	$imageTag = '<img ';
 
 	// Set the URL of the image
-	$imgTag .= ' src="' . esc_url( $imgURL ) . '# ';
+	$imageTag .= ' src="' . esc_url( $imageURL ) . '# ';
 
 
 	/*
 	 * If the variable $attr is an array and it is not empty,
 	 * add that attribute to the image string
 	 */
-	if ( is_array( $attr ) && count( $attr ) > 0 ) {
+	if ( is_array( $attributes ) && count( $attributes ) > 0 ) {
 
-	 	foreach ( $attr as $attribute => $value ) {
+	 	foreach ( $attributes as $attribute => $value ) {
 	 		
-	 		$imgTag .= ' ' . $attribute . '="' . $value . '" ';
+	 		$imageTag .= ' ' . $attribute . '="' . $value . '" ';
 
 	 	}
 	}
 
 	// Closing the image tag
-	$imgTag .= ' />';
+	$imageTag .= ' />';
 	
 	// Return the image
-	return $imgTag;
+	return $imageTag;
 
 }
 
