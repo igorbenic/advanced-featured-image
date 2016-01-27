@@ -35,32 +35,28 @@ function afi_metabox( $content, $postID ) {
 
     $content = '<div id="custom_image_container">';
 
-    if ( $imageURL ){  
-        
-        $content .= '<img src="' . $imageURL . '" style="max-width:100%;" />';
+        if ( $imageURL ) {
 
-    }
+            $content .= '<img src="' . $imageURL . '" style="max-width:100%;" />';
+
+        }
 
     $content .= '</div>' ;
 
     // Add & remove image links.
     $content .= '<p class="hide-if-no-js">';
 
-    $content .= '<a class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"';
+        $content .= '<a class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '" href="#">';
 
-    $content .= ' href="#">';
+            $content .= __( 'Set custom image', 'tutsplus' );
 
-    $content .= __( 'Set custom image', 'wordpress' );
+        $content .= '</a>';
 
-    $content .= ' </a>';
+        $content .= '<a class="delete-custom-img ' . ( ( ! $imageURL  ) ? 'hidden' : ''  ) . '" href="#">';
 
-    $content .= '<a class="delete-custom-img ' . ( ( ! $imageURL  ) ? 'hidden' : ''  ) . '" ';
+            $content .= __( 'Remove this image', 'tutsplus' );
 
-    $content .= 'href="#">';
-
-    $content .= __( 'Remove this image', 'wordpress' );
-
-    $content .= '</a>';
+        $content .= '</a>';
 
     $content .= '</p>';
 
