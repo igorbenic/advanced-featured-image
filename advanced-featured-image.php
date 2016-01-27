@@ -13,7 +13,11 @@
  * Text Domain: tutsplus
  */
 
-defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+if ( ! defined( 'WPINC' ) ) {
+
+    die;
+
+}
 
 
 add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2);
