@@ -95,32 +95,32 @@ function afi_save_thumbnail( $post_id ) {
     $switchedBlog = false;
 
     // If the image was not found, we need to look on other blog sites.
-    if( ! $imageID ) {
+    if ( ! $imageID ) {
 
          global $wpdb;
 
          // Get the ids of all installed sites.
-         $blogList =  $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid ), ARRAY_A );
+         $sites =  $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid ), ARRAY_A );
       
-         foreach ( $blogList as $blog ) {
+         foreach ( $sites as $site ) {
 
              // Skip the site if it is current site we already checked above.
-             if ( $blog['blog_id'] == $currentBlogID ) {
+             if ( $site['blog_id'] == $currentBlogID ) {
 
                  continue;
              }
 
              // Switch to the new site.
-             switch_to_blog( $blog['blog_id'] );
+             switch_to_blog( $site['blog_id'] );
 
-             // Indicate that we have switched.
+             // Track that we have switched sites.
              $switchedBlog = true;
 
              // Get the image id on this latest site.
              $imageID = afi_get_attachment_id_from_url( $imageURL );
 
              // Break from the loop if the image was found, otherwise continue searching.
-             if ( $imageID != false ) {
+             if ( false !== $imageID ) {
 
                  break;
              }
@@ -131,32 +131,32 @@ function afi_save_thumbnail( $post_id ) {
     $images = array();
      
     // Make sure we found an image.
-    if ( false != $imageID ) {
+    if ( false !== $imageID ) {
 
-         // Get meta data for that attachment id.
-         $imageMetaData = wp_get_attachment_metadata( $imageID );         
+        // Get meta data for that attachment id.
+        $imageMetaData = wp_get_attachment_metadata( $imageID );
 
-         // Get the original, uploaded image.
-         $imageFull = wp_get_attachment_image_src( $imageID, 'full' );
+        // Get the raw, uploaded image.
+        $rawImage = wp_get_attachment_image_src( $imageID, 'full' );
          
         // Add original image to array of sizes.
         $images['full'] = array(
-             'url'    => $imageFull[0],
-             'width'  => $imageMetaData['width'],
-             'height' => $imageMetaData['height']
+            'url'    => $rawImage[0],
+            'width'  => $imageMetaData['width'],
+            'height' => $imageMetaData['height']
         );
 
         // Add each generated size of the original image to the array of sizes.
-         foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
+        foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
-             $image = wp_get_attachment_image_src( $imageID, $size );
+        $image = wp_get_attachment_image_src( $imageID, $size );
 
-             $images[ $size ] = array(
-                 'url'    => $image[0],
-                 'width'  => $sizeInfo['width'],
-                 'height' => $sizeInfo['height']
-             );
-             
+        $images[ $size ] = array(
+            'url'    => $image[0],
+            'width'  => $sizeInfo['width'],
+            'height' => $sizeInfo['height']
+        );
+
         }
 
     }
