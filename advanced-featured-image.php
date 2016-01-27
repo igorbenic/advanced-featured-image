@@ -37,7 +37,7 @@ function afi_metabox( $content, $postID ) {
 
     if ( $imageURL ){  
         
-        $content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
+        $content .= '<img src="' . $imageURL . '" style="max-width:100%;" />';
 
     }
 
@@ -46,7 +46,7 @@ function afi_metabox( $content, $postID ) {
     // Add & remove image links.
     $content .= '<p class="hide-if-no-js">';
 
-    $content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"'; 
+    $content .= '<a class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"';
 
     $content .= ' href="#">';
 
