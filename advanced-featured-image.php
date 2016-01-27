@@ -88,41 +88,38 @@ function afi_save_thumbnail( $post_id ) {
 
     $imageID = afi_get_attachment_id_from_url( $imageURL );
 
-    // Current site ID
+    // Current site id.
     $currentBlogID = get_current_blog_id();
 
-    // Indicator if we have switched to other sites
+    // Flag to track if we have switched to another site.
     $switchedBlog = false;
 
-    // If the imgID was not found, we need to look on other blog sites. 
+    // If the image was not found, we need to look on other blog sites.
     if( ! $imageID ) {
 
          global $wpdb;
 
-         // Get ID  of all installed sites
+         // Get the ids of all installed sites.
          $blogList =  $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid ), ARRAY_A );
       
          foreach ( $blogList as $blog ) {
 
-             // If the loop is for the current site, we can skip that since we already know that the $imageID for that site is null
+             // Skip the site if it is current site we already checked above.
              if ( $blog['blog_id'] == $currentBlogID ) {
 
                  continue;
              }
 
-             // Switch to the new site 
+             // Switch to the new site.
              switch_to_blog( $blog['blog_id'] );
 
-             // Indicate that we have switched
+             // Indicate that we have switched.
              $switchedBlog = true;
 
-             // Get the image ID on that site
+             // Get the image id on this latest site.
              $imageID = afi_get_attachment_id_from_url( $imageURL );
 
-             /*
-              * If we have found an ID, then we have found the image
-              * Break from the loop if the image was found, otherwise continue searching
-              */
+             // Break from the loop if the image was found, otherwise continue searching.
              if ( $imageID != false ) {
 
                  break;
@@ -133,24 +130,23 @@ function afi_save_thumbnail( $post_id ) {
 
     $images = array();
      
-    // If there is an attachment we can get different sizes
+    // Make sure we found an image.
     if ( false != $imageID ) {
 
-         // Get MetaData for that attachment ID
+         // Get meta data for that attachment id.
          $imageMetaData = wp_get_attachment_metadata( $imageID );         
 
-         // Original Image
+         // Get the original, uploaded image.
          $imageFull = wp_get_attachment_image_src( $imageID, 'full' );
          
-        // Adding to array $images a size with its values
+        // Add original image to array of sizes.
         $images['full'] = array(
              'url'    => $imageFull[0],
              'width'  => $imageMetaData['width'],
              'height' => $imageMetaData['height']
         );
 
- 
-        // For each size in the $imageMetaData of that image, add corresponding values to the array $images
+        // Add each generated size of the original image to the array of sizes.
          foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
              $image = wp_get_attachment_image_src( $imageID, $size );
@@ -163,26 +159,24 @@ function afi_save_thumbnail( $post_id ) {
              
         }
 
-       
     }
      
-    // If we have switched to the other site, return to the current one 
+    // Return to the current site, if we switched during checking for images.
     if ( $switchedBlog ) {
 
         restore_current_blog();
 
     }
     
-    // Save our data
+    // Save images to post meta data.
     update_post_meta( $post_id, '_afi_image', $images );
-
     update_post_meta( $post_id, '_afi_img_src', $imageURL );
 
-    // Fake the thumbnail_id so the has_post_thumbnail works as intended on other sites
+    // Fake the `thumbnail_id` so the `has_post_thumbnail` works as intended on other sites.
     update_post_meta( $post_id, '_thumbnail_id', '1' );
+
 }
 
-// Add a new function to save the featured image data
 add_action( 'save_post', 'afi_save_thumbnail' );
 
 /**
