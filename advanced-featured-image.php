@@ -68,8 +68,7 @@ function afi_metabox( $content, $postID ) {
 add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2 );
 
 /**
- * Enqueue the script
- * @param  string $hook Name of the hook / file we are on 
+ * JavaScript for the advanced featured image metabox.
  */
 function afi_scripts() {
 
