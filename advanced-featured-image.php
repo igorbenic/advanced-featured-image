@@ -1,13 +1,18 @@
 <?php
- /*
-Plugin Name: Advanced Featured Image
-Description: Enable the regular media uploader box and select images from URL or from other sites if in Multisite.
-Version:     1.0.0.
-Author:      Igor Benić
-Author URI:  http://www.twitter.com/igorbenic
-License:     GPL2
-License URI: https://www.gnu.org/licenses/gpl-2.0.html 
-*/
+
+/**
+ * Plugin Name: Advanced Featured Image
+ * Plugin URI: http://code.tutsplus.com/tutorials/advanced-featured-image-in-wordpress--cms-25182
+ * Description: Enable the regular media uploader box and select images from URL or from other sites if in Multisite.
+ * Version: 1.0.0
+ * Author: Igor Benić
+ * Author URI: http://www.twitter.com/igorbenic
+ * License: GPL-3.0+
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * Domain Path: /lang
+ * Text Domain: tutsplus
+ */
+
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 
