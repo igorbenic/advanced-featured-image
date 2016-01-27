@@ -19,14 +19,15 @@ if ( ! defined( 'WPINC' ) ) {
 
 }
 
-
 add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2);
 
 /**
- * HTML for the custom feature image
- * @param  string 		$content 	Content in the featured image metabox
- * @param  number 		$postID  	ID of the post we are on
- * @return string          		Content for the featured image
+ * Markup for the advanced featured image metabox.
+ *
+ * @param string $content Content in the featured image metabox.
+ * @param number $postID Id of the post we are on.
+ *
+ * @return string Content for the featured image.
  */
 function afi_metabox( $content, $postID ) {
     
