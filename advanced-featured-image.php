@@ -31,48 +31,48 @@ add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2);
  */
 function afi_metabox( $content, $postID ) {
     
-	//Get the Image Source
-	$imageURL = get_post_meta( $postID, '_afi_img_src', true );
+    //Get the Image Source
+    $imageURL = get_post_meta( $postID, '_afi_img_src', true );
 
 
-	// Start the new metabox HTML
-	$content = '<div id="custom_image_container">';
+    // Start the new metabox HTML
+    $content = '<div id="custom_image_container">';
 
-	if ( $imageURL ){  
-		
-		$content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
+    if ( $imageURL ){  
+        
+        $content .= '<img src="' . $imageURL . '" alt="" style="max-width:100%;" />';
 
-	}
+    }
 
-	$content .= '</div>' ;
+    $content .= '</div>' ;
 
-	// Your add & remove image links 
-	$content .= '<p class="hide-if-no-js">';
+    // Your add & remove image links 
+    $content .= '<p class="hide-if-no-js">';
 
-	$content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"'; 
+    $content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"'; 
 
-	$content .= ' href="#">';
+    $content .= ' href="#">';
 
-	$content .= __( 'Set custom image', 'wordpress' );
+    $content .= __( 'Set custom image', 'wordpress' );
 
-	$content .= ' </a>';
+    $content .= ' </a>';
 
-	$content .= '<a class="delete-custom-img ' . ( ( ! $imageURL  ) ? 'hidden' : ''  ) . '" ';
+    $content .= '<a class="delete-custom-img ' . ( ( ! $imageURL  ) ? 'hidden' : ''  ) . '" ';
 
-	$content .= 'href="#">';
+    $content .= 'href="#">';
 
-	$content .= __( 'Remove this image', 'wordpress' );
+    $content .= __( 'Remove this image', 'wordpress' );
 
-	$content .= '</a>';
+    $content .= '</a>';
 
-	$content .= '</p>';
+    $content .= '</p>';
 
-	//<!-- A hidden input to set and post the chosen image URL-->
-	$content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imageURL ) . '" />';
+    //<!-- A hidden input to set and post the chosen image URL-->
+    $content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imageURL ) . '" />';
 
 
-	return $content;
-		
+    return $content;
+        
 }
 
 /**
@@ -81,7 +81,7 @@ function afi_metabox( $content, $postID ) {
  */
 function afi_scripts( $hook ) {  
 
-	wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), true );
+    wp_enqueue_script( 'afi_js', plugin_dir_url( __FILE__ ) . 'js/admin.js', array( 'jquery' ), true );
 
 }
 
@@ -92,103 +92,103 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
  * @param  number $post_id ID of the post 
  */
 function afi_save_thumbnail( $post_id ) {
-	   
-	$imageURL = $_POST['afi-img-src'];
+       
+    $imageURL = $_POST['afi-img-src'];
 
-	$imageID = afi_get_attachment_id_from_url( $imageURL );
+    $imageID = afi_get_attachment_id_from_url( $imageURL );
 
-	// Current site ID
-	$currentBlogID = get_current_blog_id();
+    // Current site ID
+    $currentBlogID = get_current_blog_id();
 
-	// Indicator if we have switched to other sites
+    // Indicator if we have switched to other sites
     $switchedBlog = false;
 
-	// If the imgID was not found, we need to look on other blog sites. 
-	if( ! $imageID ) {
+    // If the imgID was not found, we need to look on other blog sites. 
+    if( ! $imageID ) {
 
-	 	global $wpdb;
+         global $wpdb;
 
-	 	// Get ID  of all installed sites
-	 	$blogList =  $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid ), ARRAY_A );
+         // Get ID  of all installed sites
+         $blogList =  $wpdb->get_results( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE site_id = %d AND public = '1' AND archived = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", $wpdb->siteid ), ARRAY_A );
       
-	 	foreach ( $blogList as $blog ) {
+         foreach ( $blogList as $blog ) {
 
-	 		// If the loop is for the current site, we can skip that since we already know that the $imageID for that site is null
-	 		if ( $blog['blog_id'] == $currentBlogID ) {
+             // If the loop is for the current site, we can skip that since we already know that the $imageID for that site is null
+             if ( $blog['blog_id'] == $currentBlogID ) {
 
-	 			continue;
-	 		}
+                 continue;
+             }
 
-	 		// Switch to the new site 
-	 		switch_to_blog( $blog['blog_id'] );
+             // Switch to the new site 
+             switch_to_blog( $blog['blog_id'] );
 
-	 		// Indicate that we have switched
-	 		$switchedBlog = true;
+             // Indicate that we have switched
+             $switchedBlog = true;
 
-	 		// Get the image ID on that site
-	 		$imageID = afi_get_attachment_id_from_url( $imageURL );
+             // Get the image ID on that site
+             $imageID = afi_get_attachment_id_from_url( $imageURL );
 
-	 		/*
-	 		 * If we have found an ID, then we have found the image
-	 		 * Break from the loop if the image was found, otherwise continue searching
-	 		 */
-	 		if ( $imageID != false ) {
+             /*
+              * If we have found an ID, then we have found the image
+              * Break from the loop if the image was found, otherwise continue searching
+              */
+             if ( $imageID != false ) {
 
-	 			break;
-	 		}
-	 		
-	 	}
-	}
+                 break;
+             }
+             
+         }
+    }
 
     $images = array();
      
     // If there is an attachment we can get different sizes
     if ( false != $imageID ) {
 
-     	// Get MetaData for that attachment ID
-     	$imageMetaData = wp_get_attachment_metadata( $imageID );	     
+         // Get MetaData for that attachment ID
+         $imageMetaData = wp_get_attachment_metadata( $imageID );         
 
-     	// Original Image
-     	$imageFull = wp_get_attachment_image_src( $imageID, 'full' );
-	     
-	    // Adding to array $images a size with its values
-	    $images['full'] = array(
-	     	'url'    => $imageFull[0],
-	     	'width'  => $imageMetaData['width'],
-	     	'height' => $imageMetaData['height']
-	    );
+         // Original Image
+         $imageFull = wp_get_attachment_image_src( $imageID, 'full' );
+         
+        // Adding to array $images a size with its values
+        $images['full'] = array(
+             'url'    => $imageFull[0],
+             'width'  => $imageMetaData['width'],
+             'height' => $imageMetaData['height']
+        );
 
  
-		// For each size in the $imageMetaData of that image, add corresponding values to the array $images
- 		foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
+        // For each size in the $imageMetaData of that image, add corresponding values to the array $images
+         foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
-	     	$image = wp_get_attachment_image_src( $imageID, $size );
+             $image = wp_get_attachment_image_src( $imageID, $size );
 
-	     	$images[ $size ] = array(
-	     		'url'    => $image[0],
-	     		'width'  => $sizeInfo['width'],
-	     		'height' => $sizeInfo['height']
-	     	);
-	     	
-	    }
+             $images[ $size ] = array(
+                 'url'    => $image[0],
+                 'width'  => $sizeInfo['width'],
+                 'height' => $sizeInfo['height']
+             );
+             
+        }
 
-	   
+       
     }
      
     // If we have switched to the other site, return to the current one 
     if ( $switchedBlog ) {
 
-	    restore_current_blog();
+        restore_current_blog();
 
-	}
-	
-	// Save our data
+    }
+    
+    // Save our data
     update_post_meta( $post_id, '_afi_image', $images );
 
-	update_post_meta( $post_id, '_afi_img_src', $imageURL );
+    update_post_meta( $post_id, '_afi_img_src', $imageURL );
 
-	// Fake the thumbnail_id so the has_post_thumbnail works as intended on other sites
-	update_post_meta( $post_id, '_thumbnail_id', '1' );
+    // Fake the thumbnail_id so the has_post_thumbnail works as intended on other sites
+    update_post_meta( $post_id, '_thumbnail_id', '1' );
 }
 
 // Add a new function to save the featured image data
@@ -201,116 +201,116 @@ add_action( 'save_post', 'afi_save_thumbnail' );
  */
 function afi_get_attachment_id_from_url( $attachment_url = '' ) {
  
-	global $wpdb;
+    global $wpdb;
 
-	$attachment_id = false;
+    $attachment_id = false;
  
-	// If there is no url, return.
-	if ( '' == $attachment_url ) {
+    // If there is no url, return.
+    if ( '' == $attachment_url ) {
 
-		return;
+        return;
 
-	}
+    }
  
-	// Get the upload directory paths
-	$upload_dir_paths = wp_upload_dir();
+    // Get the upload directory paths
+    $upload_dir_paths = wp_upload_dir();
  
-	// Make sure the upload path base directory exists in the attachment URL, to verify that we're working with a media library image
-	if ( false !== strpos( $attachment_url, $upload_dir_paths['baseurl'] ) ) {
+    // Make sure the upload path base directory exists in the attachment URL, to verify that we're working with a media library image
+    if ( false !== strpos( $attachment_url, $upload_dir_paths['baseurl'] ) ) {
  
-		// If this is the URL of an auto-generated thumbnail, get the URL of the original image
-		$attachment_url = preg_replace( '/-\d+x\d+(?=\.(jpg|jpeg|png|gif)$)/i', '', $attachment_url );
+        // If this is the URL of an auto-generated thumbnail, get the URL of the original image
+        $attachment_url = preg_replace( '/-\d+x\d+(?=\.(jpg|jpeg|png|gif)$)/i', '', $attachment_url );
  
-		// Remove the upload path base directory from the attachment URL
-		$attachment_url = str_replace( $upload_dir_paths['baseurl'] . '/', '', $attachment_url );
+        // Remove the upload path base directory from the attachment URL
+        $attachment_url = str_replace( $upload_dir_paths['baseurl'] . '/', '', $attachment_url );
  
-		// Finally, run a custom database query to get the attachment ID from the modified attachment URL
-		$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT wposts.ID FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta WHERE wposts.ID = wpostmeta.post_id AND wpostmeta.meta_key = '_wp_attached_file' AND wpostmeta.meta_value = %s AND wposts.post_type = 'attachment'", $attachment_url ) );
+        // Finally, run a custom database query to get the attachment ID from the modified attachment URL
+        $attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT wposts.ID FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta WHERE wposts.ID = wpostmeta.post_id AND wpostmeta.meta_key = '_wp_attached_file' AND wpostmeta.meta_value = %s AND wposts.post_type = 'attachment'", $attachment_url ) );
  
-	}
+    }
  
-	return $attachment_id;
+    return $attachment_id;
 }
 
 
 /**
  * Change the post thumbnail Source
- * @param  string 		$html               
- * @param  number 		$post_id            
- * @param  number 		$post_thumbnail_id  
+ * @param  string         $html               
+ * @param  number         $post_id            
+ * @param  number         $post_thumbnail_id  
  * @param  string/array $size               
- * @param  array 		$attr              
+ * @param  array         $attr              
  * @return string                    
  */
 function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attributes ) {
 
-	// If the variable $attr is not an array, make it an array
+    // If the variable $attr is not an array, make it an array
     if ( ! is_array( $attributes ) ) {
-	 			
-	 	$attributes = array();
+                 
+         $attributes = array();
 
-	}
+    }
 
-	// If the attribute "class" is not set, set it
-	if ( ! isset( $attributes['class'] ) ) {
+    // If the attribute "class" is not set, set it
+    if ( ! isset( $attributes['class'] ) ) {
 
-	 	$attributes['class'] =  'wp-post-image attachment-' . $size;
+         $attributes['class'] =  'wp-post-image attachment-' . $size;
 
-	}  
+    }  
 
-	  
-	// Get all the data of the image we have saved
-	$images = get_post_meta( $post_id, '_afi_image', true );
-	 
-	$imageURL = "";
+      
+    // Get all the data of the image we have saved
+    $images = get_post_meta( $post_id, '_afi_image', true );
+     
+    $imageURL = "";
     
     // Check if is an array. If not then we have saved an image from URL
-	if ( $images && is_array( $images ) && count( $images ) > 0 ) {
-		
-		// Get Image array from the requsted size
-		$image = $images[ $size ];
-		
-		$imageURL = $image['url'];
+    if ( $images && is_array( $images ) && count( $images ) > 0 ) {
+        
+        // Get Image array from the requsted size
+        $image = $images[ $size ];
+        
+        $imageURL = $image['url'];
 
-		// Setting the width and height attributes
-		$attributes['width']  = $image['width'];
-		$attributes['height'] = $image['height'];
+        // Setting the width and height attributes
+        $attributes['width']  = $image['width'];
+        $attributes['height'] = $image['height'];
 
-	} else {
-		
-		/*
-		 * If we do not have an array in $image or is empty, then this is an image provided from URL
-		 * Get only the SRC
-		 */
-		$imageURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
+    } else {
+        
+        /*
+         * If we do not have an array in $image or is empty, then this is an image provided from URL
+         * Get only the SRC
+         */
+        $imageURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
 
-	}
-	
-	// Start the Tag
-	$imageTag = '<img ';
+    }
+    
+    // Start the Tag
+    $imageTag = '<img ';
 
-	// Set the URL of the image
-	$imageTag .= ' src="' . esc_url( $imageURL ) . '# ';
+    // Set the URL of the image
+    $imageTag .= ' src="' . esc_url( $imageURL ) . '# ';
 
 
-	/*
-	 * If the variable $attr is an array and it is not empty,
-	 * add that attribute to the image string
-	 */
-	if ( is_array( $attributes ) && count( $attributes ) > 0 ) {
+    /*
+     * If the variable $attr is an array and it is not empty,
+     * add that attribute to the image string
+     */
+    if ( is_array( $attributes ) && count( $attributes ) > 0 ) {
 
-	 	foreach ( $attributes as $attribute => $value ) {
-	 		
-	 		$imageTag .= ' ' . $attribute . '="' . $value . '" ';
+         foreach ( $attributes as $attribute => $value ) {
+             
+             $imageTag .= ' ' . $attribute . '="' . $value . '" ';
 
-	 	}
-	}
+         }
+    }
 
-	// Closing the image tag
-	$imageTag .= ' />';
-	
-	// Return the image
-	return $imageTag;
+    // Closing the image tag
+    $imageTag .= ' />';
+    
+    // Return the image
+    return $imageTag;
 
 }
 
@@ -324,13 +324,13 @@ add_filter( 'post_thumbnail_html', 'afi_post_thumbnail_html', 99, 5 );
 function afi_deactivate() {
 
  
-	global $wpdb, $blog_id;
+    global $wpdb, $blog_id;
 
 
-	// Delete from Multisite if the multisite is enabled
-	if ( is_multisite() ) {
+    // Delete from Multisite if the multisite is enabled
+    if ( is_multisite() ) {
 
-		// Query to select IDs from all sites
+        // Query to select IDs from all sites
         $dbquery = "SELECT blog_id FROM $wpdb->blogs";
 
         // IDs from all sites
@@ -344,12 +344,12 @@ function afi_deactivate() {
             afi_delete_from_site();
         }
 
-    	// Get back to the original site
-			switch_to_blog( $blog_id );
+        // Get back to the original site
+            switch_to_blog( $blog_id );
 
     } else {
 
-    	afi_delete_from_site();
+        afi_delete_from_site();
 
     }
 
@@ -364,24 +364,24 @@ function afi_delete_from_site() {
     
     global $wpdb;
 
-	// Query for all  post IDs where the advanced featured image was used
-	$postmeta = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'";
+    // Query for all  post IDs where the advanced featured image was used
+    $postmeta = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'";
 
-	// Get all post IDs where the advanced featured image was used
-	$postIDs = $wpdb->get_col( $postmeta );
+    // Get all post IDs where the advanced featured image was used
+    $postIDs = $wpdb->get_col( $postmeta );
 
-	// Delete all meta data with the key '_afi_img_src'
-	delete_post_meta_by_key( '_afi_img_src' ); 
+    // Delete all meta data with the key '_afi_img_src'
+    delete_post_meta_by_key( '_afi_img_src' ); 
 
-	// Delete all meta data with the key '_afi_image'
-	delete_post_meta_by_key( '_afi_image' ); 
+    // Delete all meta data with the key '_afi_image'
+    delete_post_meta_by_key( '_afi_image' ); 
 
-	// Delete fake thumbnail ID information for every post that had advanced featured image
-	foreach ( $postIDs as $postID ) {
-		 
-		delete_post_meta( $postID, '_thumbnail_id' );
+    // Delete fake thumbnail ID information for every post that had advanced featured image
+    foreach ( $postIDs as $postID ) {
+         
+        delete_post_meta( $postID, '_thumbnail_id' );
 
-	}
+    }
 
 }
 
