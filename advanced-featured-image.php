@@ -31,11 +31,8 @@ add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2);
  */
 function afi_metabox( $content, $postID ) {
     
-    //Get the Image Source
     $imageURL = get_post_meta( $postID, '_afi_img_src', true );
 
-
-    // Start the new metabox HTML
     $content = '<div id="custom_image_container">';
 
     if ( $imageURL ){  
@@ -46,7 +43,7 @@ function afi_metabox( $content, $postID ) {
 
     $content .= '</div>' ;
 
-    // Your add & remove image links 
+    // Add & remove image links.
     $content .= '<p class="hide-if-no-js">';
 
     $content .= '<a id="upload-custom-img" class="upload-custom-img ' . ( ( $imageURL  ) ? 'hidden' : '' ) . '"'; 
@@ -67,9 +64,8 @@ function afi_metabox( $content, $postID ) {
 
     $content .= '</p>';
 
-    //<!-- A hidden input to set and post the chosen image URL-->
+    // Hidden input to set the chosen image url on post.
     $content .= '<input class="afi-img-id" name="afi-img-src" type="hidden" value="' . esc_url( $imageURL ) . '" />';
-
 
     return $content;
         
