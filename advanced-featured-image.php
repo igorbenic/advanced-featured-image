@@ -331,19 +331,16 @@ function afi_delete_from_site() {
     
     global $wpdb;
 
-    // Query for all  post IDs where the advanced featured image was used
-    $postmeta = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'";
+    // Get all post ids where the advanced featured image was used.
+    $postIDs = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'" );
 
-    // Get all post IDs where the advanced featured image was used
-    $postIDs = $wpdb->get_col( $postmeta );
-
-    // Delete all meta data with the key '_afi_img_src'
+    // Delete all meta data with the key `_afi_img_src`.
     delete_post_meta_by_key( '_afi_img_src' ); 
 
-    // Delete all meta data with the key '_afi_image'
+    // Delete all meta data with the key `_afi_image`.
     delete_post_meta_by_key( '_afi_image' ); 
 
-    // Delete fake thumbnail ID information for every post that had advanced featured image
+    // Delete fake thumbnail id information for every post that had advanced featured image.
     foreach ( $postIDs as $postID ) {
          
         delete_post_meta( $postID, '_thumbnail_id' );
