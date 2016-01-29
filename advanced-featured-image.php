@@ -142,7 +142,6 @@ function afi_save_thumbnail( $post_id ) {
 
         // Get meta data for that attachment id.
         $imageMetaData = wp_get_attachment_metadata( $imageID );
-
         // Get the original, uploaded image.
         $originalImage = wp_get_attachment_image_src( $imageID, 'full' );
          
@@ -153,6 +152,10 @@ function afi_save_thumbnail( $post_id ) {
             'height' => $imageMetaData['height']
         );
 
+        $registeredSizes = get_intermediate_image_sizes();
+        $availableSizes = array();
+        $largestAvailableSize = array();
+        $largestAvailableWidth = 0;
         // Add each generated size of the original image to the array of sizes.
         foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
@@ -164,7 +167,28 @@ function afi_save_thumbnail( $post_id ) {
                 'height' => $sizeInfo['height']
             );
 
+            if( $largestAvailableWidth < (int)  $sizeInfo['width'] ){
+                
+                $largestAvailableSize = $images[ $size ];
+            
+            }
+
+            $availableSizes[] = $size;
+
         }
+
+        // Sizes for which an image could not be created beucase it is smaller than the defined dimensions
+        $missingSizes = array_diff( $registeredSizes, $availableSizes );
+
+        if( count( $missingSizes ) > 0 ){
+
+            foreach ( $missingSizes as $size) {
+
+                    $images[ $size ] = $largestAvailableSize;
+
+            }
+
+        }        
 
     }
      
@@ -273,7 +297,7 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
     } else {
 
         // Get the image source from the post.
-        $imageURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
+        $imageURL = get_post_meta( $post_id, '_afi_img_src', true );
 
     }
     
