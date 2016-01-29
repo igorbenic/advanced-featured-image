@@ -233,73 +233,61 @@ function afi_get_attachment_id_from_url( $attachment_url = '' ) {
  */
 function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attributes ) {
 
-    // If the variable is not an array, make it an array
+    // If the `$attributes` variable is not an array, make it an array.
     if ( ! is_array( $attributes ) ) {
                  
          $attributes = array();
 
     }
 
-    // If the attribute "class" is not set, set it
+    // If the attribute "class" is not set, set it.
     if ( ! isset( $attributes['class'] ) ) {
 
          $attributes['class'] =  'wp-post-image attachment-' . $size;
 
     }  
 
-      
-    // Get all the data of the image we have saved
+    // Get all the data of the image we saved.
     $images = get_post_meta( $post_id, '_afi_image', true );
-     
-    $imageURL = "";
+
+    $imageURL = '';
     
-    // Check if is an array. If not then we have saved an image from URL
-    if ( $images && is_array( $images ) && count( $images ) > 0 ) {
-        
-        // Get Image array from the requsted size
+    // Check if we have multiple images.
+    if ( $images && is_array( $images ) && ! empty( $images ) ) {
+
+        // Get the size of the image.
         $image = $images[ $size ];
-        
+
         $imageURL = $image['url'];
 
-        // Setting the width and height attributes
+        // Set the width and height attributes based on image size.
         $attributes['width']  = $image['width'];
         $attributes['height'] = $image['height'];
 
     } else {
-        
-        /*
-         * If we do not have an array in $image or is empty, then this is an image provided from URL
-         * Get only the SRC
-         */
+
+        // Get the image source from the post.
         $imageURL = get_post_meta( $post_id, '_ibenic_mufimg_src', true );
 
     }
     
-    // Start the Tag
-    $imageTag = '<img ';
+    $imageAttributes = '';
 
-    // Set the URL of the image
-    $imageTag .= ' src="' . esc_url( $imageURL ) . '# ';
+    // Concatenate the image attributes, so we can append it to the image url.
+    if ( is_array( $attributes ) && ! empty( $attributes ) ) {
 
+        $imageAttributes .= '# ';
 
-    /*
-     * If the variable $attr is an array and it is not empty,
-     * add that attribute to the image string
-     */
-    if ( is_array( $attributes ) && count( $attributes ) > 0 ) {
+        foreach ( $attributes as $attribute => $value ) {
 
-         foreach ( $attributes as $attribute => $value ) {
-             
-             $imageTag .= ' ' . $attribute . '="' . $value . '" ';
+            $imageAttributes .= ' ' . $attribute . '="' . $value . '" ';
 
-         }
+        }
+
     }
 
-    // Closing the image tag
-    $imageTag .= ' />';
-    
-    // Return the image
-    return $imageTag;
+    // Create and return the image tag.
+    return '<img src="' . esc_url( $imageURL ) . $imageAttributes . ' />';
 
 }
 
