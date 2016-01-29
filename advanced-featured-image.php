@@ -298,20 +298,14 @@ add_filter( 'post_thumbnail_html', 'afi_post_thumbnail_html', 99, 5 );
  */
 function afi_deactivate() {
 
- 
     global $wpdb, $blog_id;
 
-
-    // Delete from Multisite if the multisite is enabled
+    // Delete from multisite if the multisite is enabled.
     if ( is_multisite() ) {
 
-        // Query to select IDs from all sites
-        $dbquery = "SELECT blog_id FROM $wpdb->blogs";
+        // Get all ids from all sites.
+        $ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
 
-        // IDs from all sites
-        $ids = $wpdb->get_col( $dbquery );
-
-         
         foreach ( $ids as $id ) {
 
             switch_to_blog( $id );
@@ -319,15 +313,14 @@ function afi_deactivate() {
             afi_delete_from_site();
         }
 
-        // Get back to the original site
-            switch_to_blog( $blog_id );
+        // Get back to the original site.
+        switch_to_blog( $blog_id );
 
     } else {
 
         afi_delete_from_site();
 
     }
-
 
 }
 
