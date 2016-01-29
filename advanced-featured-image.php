@@ -84,7 +84,13 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
  * @param number $post_id Id of the post.
  */
 function afi_save_thumbnail( $post_id ) {
-       
+
+    if ( ! $_POST ) {
+
+        return;
+
+    }
+
     $imageURL = $_POST['afi-img-src'];
 
     $imageID = afi_get_attachment_id_from_url( $imageURL );
@@ -132,7 +138,7 @@ function afi_save_thumbnail( $post_id ) {
     $images = array();
      
     // Make sure we found an image.
-    if ( false !== $imageID ) {
+    if ( $imageID ) {
 
         // Get meta data for that attachment id.
         $imageMetaData = wp_get_attachment_metadata( $imageID );
