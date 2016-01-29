@@ -156,13 +156,13 @@ function afi_save_thumbnail( $post_id ) {
         // Add each generated size of the original image to the array of sizes.
         foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
-        $image = wp_get_attachment_image_src( $imageID, $size );
+            $image = wp_get_attachment_image_src( $imageID, $size );
 
-        $images[ $size ] = array(
-            'url'    => $image[0],
-            'width'  => $sizeInfo['width'],
-            'height' => $sizeInfo['height']
-        );
+            $images[ $size ] = array(
+                'url'    => $image[0],
+                'width'  => $sizeInfo['width'],
+                'height' => $sizeInfo['height']
+            );
 
         }
 
