@@ -79,8 +79,9 @@ function afi_scripts() {
 add_action( 'admin_enqueue_scripts', 'afi_scripts' );
 
 /**
- * Saving the thumbnail when used on other multisites
- * @param  number $post_id ID of the post 
+ * Saving the thumbnail when used on other multisites.
+ *
+ * @param number $post_id Id of the post.
  */
 function afi_save_thumbnail( $post_id ) {
        
@@ -182,9 +183,9 @@ add_action( 'save_post', 'afi_save_thumbnail' );
 /**
  * Gets the attachment id of the image, if it exists.
  *
- * @param string $attachment_url
+ * @param string $attachment_url The url of the attachment image.
  *
- * @return bool|null|string|void
+ * @return number Attachemnt id of image.
  */
 function afi_get_attachment_id_from_url( $attachment_url = '' ) {
  
@@ -219,19 +220,20 @@ function afi_get_attachment_id_from_url( $attachment_url = '' ) {
     return $attachment_id;
 }
 
-
 /**
- * Change the post thumbnail Source
- * @param  string         $html               
- * @param  number         $post_id            
- * @param  number         $post_thumbnail_id  
- * @param  string/array $size               
- * @param  array         $attr              
- * @return string                    
+ * Customize the post thumbnail markup.
+ *
+ * @param string $html The post thumbnail markup.
+ * @param number $post_id The post id.
+ * @param number $post_thumbnail_id THe post thumbnail id.
+ * @param string/array $size The post thumbnail size.
+ * @param array $attributes Query string of attributes.
+ *
+ * @return string Image tag of the post thumbnail.
  */
 function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attributes ) {
 
-    // If the variable $attr is not an array, make it an array
+    // If the variable is not an array, make it an array
     if ( ! is_array( $attributes ) ) {
                  
          $attributes = array();
@@ -303,11 +305,9 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 
 add_filter( 'post_thumbnail_html', 'afi_post_thumbnail_html', 99, 5 );
 
-
 /**
- * Remove all the data of the Advanced Featured Image
- * @return void
- **/
+ * Remove all the plugin data when plugin is deactivated.
+ */
 function afi_deactivate() {
 
  
@@ -344,8 +344,7 @@ function afi_deactivate() {
 }
 
 /**
- * Deleting Advanced Featured Image data from content
- * @return void
+ * Deleting plugin from content.
  */
 function afi_delete_from_site() {
     
