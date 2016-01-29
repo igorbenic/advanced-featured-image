@@ -136,12 +136,12 @@ function afi_save_thumbnail( $post_id ) {
         // Get meta data for that attachment id.
         $imageMetaData = wp_get_attachment_metadata( $imageID );
 
-        // Get the raw, uploaded image.
-        $rawImage = wp_get_attachment_image_src( $imageID, 'full' );
+        // Get the original, uploaded image.
+        $originalImage = wp_get_attachment_image_src( $imageID, 'full' );
          
         // Add original image to array of sizes.
         $images['full'] = array(
-            'url'    => $rawImage[0],
+            'url'    => $originalImage[0],
             'width'  => $imageMetaData['width'],
             'height' => $imageMetaData['height']
         );
