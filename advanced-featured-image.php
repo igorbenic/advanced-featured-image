@@ -19,6 +19,8 @@ if ( ! defined( 'WPINC' ) ) {
 
 }
 
+define( 'AFI_MAIN_SITE_ID', 1 );
+
 /**
  * Markup for the advanced featured image metabox.
  *
@@ -30,6 +32,18 @@ if ( ! defined( 'WPINC' ) ) {
 function afi_metabox( $content, $postID ) {
     
     $imageURL = get_post_meta( $postID, '_afi_img_src', true );
+
+    if( $imageURL == '' ){
+
+        $post_thumbnail_id = get_post_thumbnail_id( $postID );
+
+        if( $post_thumbnail_id != '' ){
+
+            $imageURL = wp_get_attachment_url( $post_thumbnail_id );
+
+        }
+
+    }
 
     $content = '<div id="custom_image_container">';
 
@@ -93,6 +107,15 @@ function afi_save_thumbnail( $post_id ) {
 
     $imageURL = $_POST['afi-img-src'];
 
+    if( $imageURL == '' ) { 
+
+        delete_post_meta( $post_id, '_afi_image' );
+        delete_post_meta( $post_id, '_afi_img_src' );
+        delete_post_meta( $post_id, '_thumbnail_id' );
+        return;
+
+    }
+
     $imageID = afi_get_attachment_id_from_url( $imageURL );
 
     // Current site id.
@@ -102,7 +125,7 @@ function afi_save_thumbnail( $post_id ) {
     $switchedBlog = false;
 
     // If the image was not found, we need to look on other blog sites.
-    if ( ! $imageID ) {
+    if ( is_multisite() && ! $imageID ) {
 
          global $wpdb;
 
@@ -136,7 +159,21 @@ function afi_save_thumbnail( $post_id ) {
     }
 
     $images = array();
-     
+    
+    if( ! $imageID ){
+        // The Image was not found on our sites. It must be an image from another site.
+        // Let's download it and save it in our main site
+        
+        if( is_multisite() && $currentBlogID != AFI_MAIN_SITE_ID ){
+            switch_to_blog( AFI_MAIN_SITE_ID );
+            $switchedBlog = true;
+        }
+        
+        $imageID = afi_save_external_image( $imageURL );
+        $imageURL = wp_get_attachment_url( $imageID );
+
+    }
+
     // Make sure we found an image.
     if ( $imageID ) {
 
@@ -170,6 +207,7 @@ function afi_save_thumbnail( $post_id ) {
             if( $largestAvailableWidth < (int)  $sizeInfo['width'] ){
                 
                 $largestAvailableSize = $images[ $size ];
+                $largestAvailableWidth = (int) $sizeInfo['width'];
             
             }
 
@@ -190,7 +228,7 @@ function afi_save_thumbnail( $post_id ) {
 
         }        
 
-    }
+    } 
      
     // Return to the current site, if we switched during checking for images.
     if ( $switchedBlog ) {
@@ -204,11 +242,52 @@ function afi_save_thumbnail( $post_id ) {
     update_post_meta( $post_id, '_afi_img_src', $imageURL );
 
     // Fake the `thumbnail_id` so the `has_post_thumbnail` works as intended on other sites.
-    update_post_meta( $post_id, '_thumbnail_id', '1' );
+    update_post_meta( $post_id, '_thumbnail_id', $imageID );
 
 }
 
 add_action( 'save_post', 'afi_save_thumbnail' );
+
+/**
+ * Download the image from url and save it as an attachment
+ * @param  string $url The image URL
+ * @return number      Integer of the Attachment ID
+ */
+function afi_save_external_image( $url ) {
+
+    $temporary_file = download_url( $url );
+    $realFile = pathinfo( $url );
+    $basename = $realFile['basename'];
+    $extension = $realFile['extension'];
+    $allowed_extensions = array( 'jpg', 'png', 'gif' );
+
+    if( ! in_array( strtolower( $extension ), $allowed_extensions ) ) { 
+        return 0; 
+    }
+
+    $filename = str_replace( '.' . $extension, '', $basename );
+    $sanitized_basename = sanitize_title( $filename ) . '.' . $extension;
+
+    $fileArray = array();
+    $fileArray['tmp_name'] =  $temporary_file;
+    $fileArray['name'] = $sanitized_basename;
+    $fileArray['type'] = 'image/' . $extension;
+    $fileArray['error'] = 0;
+    $fileArray['size'] = filesize( $temporary_file );
+    
+    // do the validation and storage stuff
+    // Ovo se radi na našem blogu koji je defaultni
+    $att_id = media_handle_sideload( $fileArray, 0 );             // $post_data can override the items saved to wp_posts table, like post_mime_type, guid, post_parent, post_title, post_content, post_status
+
+    // If error storing permanently, unlink
+    if ( is_wp_error( $att_id ) ) {
+        @unlink( $file_array['tmp_name'] );   // clean up
+        return 0; 
+    }
+
+    // set as post thumbnail if desired
+    return $att_id;
+}
 
 /**
  * Gets the attachment id of the image, if it exists.
@@ -281,6 +360,10 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
     $images = get_post_meta( $post_id, '_afi_image', true );
 
     $imageURL = '';
+
+    $srcset = '';
+
+    $sizes = '';
     
     // Check if we have multiple images.
     if ( $images && is_array( $images ) && ! empty( $images ) ) {
@@ -294,10 +377,31 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
         $attributes['width']  = $image['width'];
         $attributes['height'] = $image['height'];
 
+        $sizes = sprintf( '(max-width: %1$dpx) 100vw, %1$dpx', $image['width'] );
+
+        $used_sizes = array();
+
+        foreach ( $images as $size => $size_array) {
+            
+            // If a width is already used, we do not need another one.
+            // It can happen when there is the same image for several sizes
+            if( in_array( $size_array['width'], $used_sizes ) ) {
+                continue;
+            }
+
+            $used_sizes[] = $size_array['width'];
+
+            $srcset .= $size_array['url'] . ' ' . $size_array['width'] . 'w ';
+
+        }
+
     } else {
 
         // Get the image source from the post.
         $imageURL = get_post_meta( $post_id, '_afi_img_src', true );
+        if( $imageURL == "" ){
+            return $html;
+        }
 
     }
     
@@ -305,8 +409,6 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 
     // Concatenate the image attributes, so we can append it to the image url.
     if ( is_array( $attributes ) && ! empty( $attributes ) ) {
-
-        $imageAttributes .= '# ';
 
         foreach ( $attributes as $attribute => $value ) {
 
@@ -316,8 +418,16 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 
     }
 
+    if( $srcset != '' ){
+        $srcset = 'srcset="' . $srcset . '"';
+    }
+
+    if( $sizes != '' ){
+        $sizes = 'sizes="' . $sizes . '"';
+    }
+
     // Create and return the image tag.
-    return '<img src="' . esc_url( $imageURL ) . $imageAttributes . ' />';
+    return '<img src="' . esc_url( $imageURL ) . '" ' . $srcset . ' ' . $sizes . ' '. $imageAttributes . ' />';
 
 }
 
