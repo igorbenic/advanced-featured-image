@@ -33,11 +33,11 @@ function afi_metabox( $content, $postID ) {
     
     $imageURL = get_post_meta( $postID, '_afi_img_src', true );
 
-    if( $imageURL == '' ){
+    if ( empty( $imageURL ) ) {
 
         $post_thumbnail_id = get_post_thumbnail_id( $postID );
 
-        if( $post_thumbnail_id != '' ){
+        if ( ! empty( $post_thumbnail_id ) ) {
 
             $imageURL = wp_get_attachment_url( $post_thumbnail_id );
 
@@ -107,11 +107,12 @@ function afi_save_thumbnail( $post_id ) {
 
     $imageURL = $_POST['afi-img-src'];
 
-    if( $imageURL == '' ) { 
+    if ( empty( $imageURL ) ) {
 
         delete_post_meta( $post_id, '_afi_image' );
         delete_post_meta( $post_id, '_afi_img_src' );
         delete_post_meta( $post_id, '_thumbnail_id' );
+
         return;
 
     }
@@ -160,13 +161,18 @@ function afi_save_thumbnail( $post_id ) {
 
     $images = array();
     
-    if( ! $imageID ){
-        // The Image was not found on our sites. It must be an image from another site.
-        // Let's download it and save it in our main site
-        
-        if( is_multisite() && $currentBlogID != AFI_MAIN_SITE_ID ){
+    if ( ! $imageID ) {
+
+        /*
+         * The image was not found on our sites, so it must be an image from another site.
+         * Let's download the image and save it in our main site.
+         */
+
+        if ( is_multisite() && $currentBlogID !== AFI_MAIN_SITE_ID ) {
+
             switch_to_blog( AFI_MAIN_SITE_ID );
             $switchedBlog = true;
+
         }
         
         $imageID = afi_save_external_image( $imageURL );
@@ -179,6 +185,7 @@ function afi_save_thumbnail( $post_id ) {
 
         // Get meta data for that attachment id.
         $imageMetaData = wp_get_attachment_metadata( $imageID );
+
         // Get the original, uploaded image.
         $originalImage = wp_get_attachment_image_src( $imageID, 'full' );
          
@@ -193,6 +200,7 @@ function afi_save_thumbnail( $post_id ) {
         $availableSizes = array();
         $largestAvailableSize = array();
         $largestAvailableWidth = 0;
+
         // Add each generated size of the original image to the array of sizes.
         foreach ( $imageMetaData['sizes'] as $size => $sizeInfo ) {
 
@@ -204,7 +212,7 @@ function afi_save_thumbnail( $post_id ) {
                 'height' => $sizeInfo['height']
             );
 
-            if( $largestAvailableWidth < (int)  $sizeInfo['width'] ){
+            if ( $largestAvailableWidth < (int) $sizeInfo['width'] ) {
                 
                 $largestAvailableSize = $images[ $size ];
                 $largestAvailableWidth = (int) $sizeInfo['width'];
@@ -215,10 +223,10 @@ function afi_save_thumbnail( $post_id ) {
 
         }
 
-        // Sizes for which an image could not be created beucase it is smaller than the defined dimensions
+        // Sizes for which an image could not be created because it is smaller than the defined dimensions
         $missingSizes = array_diff( $registeredSizes, $availableSizes );
 
-        if( count( $missingSizes ) > 0 ){
+        if ( count( $missingSizes ) > 0 ) {
 
             foreach ( $missingSizes as $size) {
 
@@ -249,9 +257,11 @@ function afi_save_thumbnail( $post_id ) {
 add_action( 'save_post', 'afi_save_thumbnail' );
 
 /**
- * Download the image from url and save it as an attachment
- * @param  string $url The image URL
- * @return number      Integer of the Attachment ID
+ * Downloads the image from url and saves it as an attachment.
+ *
+ * @param string $url The image url.
+ *
+ * @return number Integer of the attachment id.
  */
 function afi_save_external_image( $url ) {
 
@@ -259,10 +269,16 @@ function afi_save_external_image( $url ) {
     $realFile = pathinfo( $url );
     $basename = $realFile['basename'];
     $extension = $realFile['extension'];
-    $allowed_extensions = array( 'jpg', 'png', 'gif' );
+    $allowed_extensions = array(
+        'jpg',
+        'png',
+        'gif'
+    );
 
-    if( ! in_array( strtolower( $extension ), $allowed_extensions ) ) { 
-        return 0; 
+    if ( ! in_array( strtolower( $extension ), $allowed_extensions ) ) {
+
+        return 0;
+
     }
 
     $filename = str_replace( '.' . $extension, '', $basename );
@@ -275,17 +291,18 @@ function afi_save_external_image( $url ) {
     $fileArray['error'] = 0;
     $fileArray['size'] = filesize( $temporary_file );
     
-    // do the validation and storage stuff
-    // Ovo se radi na našem blogu koji je defaultni
-    $att_id = media_handle_sideload( $fileArray, 0 );             // $post_data can override the items saved to wp_posts table, like post_mime_type, guid, post_parent, post_title, post_content, post_status
+    // Do validation and storage.
+    $att_id = media_handle_sideload( $fileArray, 0 );
 
-    // If error storing permanently, unlink
+    // Bail and clean things up if there are errors with storing.
     if ( is_wp_error( $att_id ) ) {
-        @unlink( $file_array['tmp_name'] );   // clean up
-        return 0; 
+
+        @unlink( $fileArray['tmp_name'] );
+
+        return 0;
+
     }
 
-    // set as post thumbnail if desired
     return $att_id;
 }
 
@@ -360,9 +377,7 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
     $images = get_post_meta( $post_id, '_afi_image', true );
 
     $imageURL = '';
-
     $srcset = '';
-
     $sizes = '';
     
     // Check if we have multiple images.
@@ -399,8 +414,11 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 
         // Get the image source from the post.
         $imageURL = get_post_meta( $post_id, '_afi_img_src', true );
-        if( $imageURL == "" ){
+
+        if ( empty( $imageURL ) ) {
+
             return $html;
+
         }
 
     }
@@ -418,12 +436,16 @@ function afi_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $a
 
     }
 
-    if( $srcset != '' ){
+    if ( ! empty( $srcset ) ) {
+
         $srcset = 'srcset="' . $srcset . '"';
+
     }
 
-    if( $sizes != '' ){
+    if ( ! empty( $sizes ) ) {
+
         $sizes = 'sizes="' . $sizes . '"';
+
     }
 
     // Create and return the image tag.
@@ -463,7 +485,63 @@ function afi_deactivate() {
     }
 
 }
+/**
+ * Remove all the plugin data when plugin is deactivated.
+ */
+function afi_deactivate() {
 
+    global $wpdb, $blog_id;
+
+    // Delete from multisite if the multisite is enabled.
+    if ( is_multisite() ) {
+
+        // Get all ids from all sites.
+        $ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+
+        foreach ( $ids as $id ) {
+
+            switch_to_blog( $id );
+
+            afi_delete_from_site();
+        }
+
+        // Get back to the original site.
+        switch_to_blog( $blog_id );
+
+    } else {
+
+        afi_delete_from_site();
+
+    }
+
+}
+
+register_deactivation_hook( __FILE__, 'afi_deactivate' );
+
+/**
+ * Deleting plugin from content.
+ */
+function afi_delete_from_site() {
+
+    global $wpdb;
+
+    // Get all post ids where the advanced featured image was used.
+    $postIDs = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'" );
+
+    // Delete all meta data with the key `_afi_img_src`.
+    delete_post_meta_by_key( '_afi_img_src' );
+
+    // Delete all meta data with the key `_afi_image`.
+    delete_post_meta_by_key( '_afi_image' );
+
+    // Delete fake thumbnail id information for every post that had advanced featured image.
+    foreach ( $postIDs as $postID ) {
+
+        delete_post_meta( $postID, '_thumbnail_id' );
+
+    }
+
+}
 /**
  * Deleting plugin from content.
  */
@@ -488,5 +566,3 @@ function afi_delete_from_site() {
     }
 
 }
-
-register_deactivation_hook( __FILE__, 'afi_deactivate' );
