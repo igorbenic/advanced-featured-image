@@ -485,7 +485,63 @@ function afi_deactivate() {
     }
 
 }
+/**
+ * Remove all the plugin data when plugin is deactivated.
+ */
+function afi_deactivate() {
 
+    global $wpdb, $blog_id;
+
+    // Delete from multisite if the multisite is enabled.
+    if ( is_multisite() ) {
+
+        // Get all ids from all sites.
+        $ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
+
+        foreach ( $ids as $id ) {
+
+            switch_to_blog( $id );
+
+            afi_delete_from_site();
+        }
+
+        // Get back to the original site.
+        switch_to_blog( $blog_id );
+
+    } else {
+
+        afi_delete_from_site();
+
+    }
+
+}
+
+register_deactivation_hook( __FILE__, 'afi_deactivate' );
+
+/**
+ * Deleting plugin from content.
+ */
+function afi_delete_from_site() {
+
+    global $wpdb;
+
+    // Get all post ids where the advanced featured image was used.
+    $postIDs = $wpdb->get_col( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_afi_img_src'" );
+
+    // Delete all meta data with the key `_afi_img_src`.
+    delete_post_meta_by_key( '_afi_img_src' );
+
+    // Delete all meta data with the key `_afi_image`.
+    delete_post_meta_by_key( '_afi_image' );
+
+    // Delete fake thumbnail id information for every post that had advanced featured image.
+    foreach ( $postIDs as $postID ) {
+
+        delete_post_meta( $postID, '_thumbnail_id' );
+
+    }
+
+}
 /**
  * Deleting plugin from content.
  */
@@ -510,5 +566,3 @@ function afi_delete_from_site() {
     }
 
 }
-
-register_deactivation_hook( __FILE__, 'afi_deactivate' );
