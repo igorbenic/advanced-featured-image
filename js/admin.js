@@ -1,6 +1,6 @@
 'use strict';
 
-function afi_renderMediaUploader( $, wp, imageContainer, inputField, uploadImage, deleteImage ) {
+function afiRenderMediaUploader($, imageContainer, inputField, uploadImage, deleteImage ) {
 
     var file_frame;
  
@@ -54,7 +54,7 @@ function afi_renderMediaUploader( $, wp, imageContainer, inputField, uploadImage
         
         if ( image && image.url ) {
 
-            createImage( imageContainer, deleteImage, uploadImage, image, inputField );
+            afiCreateImage( imageContainer, deleteImage, uploadImage, image, inputField );
 
         }
                 
@@ -84,7 +84,7 @@ function afi_renderMediaUploader( $, wp, imageContainer, inputField, uploadImage
         }
      
         // After that, set the properties of the image and display it.
-        createImage( imageContainer, deleteImage, uploadImage, json, inputField );
+        afiCreateImage( imageContainer, deleteImage, uploadImage, json, inputField );
    
     });
  
@@ -93,7 +93,7 @@ function afi_renderMediaUploader( $, wp, imageContainer, inputField, uploadImage
  
 }
 
-function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputField ) {
+function afiCreateImage( $imageContainer, $deleteImage, $uploadImage, json, inputField ) {
 
     $imageContainer.append( '<img src="' + json.url + '" alt="' + json.caption + '" style="max-width: 100%;" />' );
     inputField.val( json.url );
@@ -102,40 +102,40 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
 
 }
 
-(function( $, wp ) {
+(function( $) {
 
-    $( document ).ready(function(){
+    $( document ).ready( function() {
 
-        var afi_custom_image_container = $( '#custom_image_container'),
-            afi_delete_custom_image = $( '.delete-custom-img'),
-            afi_upload_custom_image = $( '.upload-custom-img' ),
+        var customImageContainer = $( '#custom_image_container'),
+            deleteCustomImage = $( '.delete-custom-img'),
+            uploadCustomImage = $( '.upload-custom-img' ),
             inputField = $( '.afi-img-id' );
 
         // Make sure both the button and the field exist.
-        if ( afi_upload_custom_image && inputField ) {
+        if ( uploadCustomImage && inputField ) {
 
-            // Show the thick box when the button is clicked.
-            afi_upload_custom_image.on( 'click', function() {
+            // Show the meida uploader when the button is clicked.
+            uploadCustomImage.on( 'click', function() {
 
-                afi_renderMediaUploader( $, wp, afi_custom_image_container, inputField, afi_upload_custom_image, afi_delete_custom_image );
+                afiRenderMediaUploader( $, customImageContainer, inputField, uploadCustomImage, deleteCustomImage );
 
             });
         }
 
         // Handle removing image.
-        $( afi_delete_custom_image ).on( 'click', function( event ) {
+        $( deleteCustomImage ).on( 'click', function( event ) {
 
             event.preventDefault();
 
-            afi_custom_image_container.empty();
+            customImageContainer.empty();
 
             inputField.val( '' );
 
-            afi_delete_custom_image.addClass( 'hidden' );
-            afi_upload_custom_image.removeClass( 'hidden' );
+            deleteCustomImage.addClass( 'hidden' );
+            uploadCustomImage.removeClass( 'hidden' );
 
         });
 
     });
 
-})( jQuery, wp );
+})( jQuery );
