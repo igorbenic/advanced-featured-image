@@ -19,8 +19,6 @@ if ( ! defined( 'WPINC' ) ) {
 
 }
 
-define( 'AFI_MAIN_SITE_ID', 1 );
-
 /**
  * Markup for the advanced featured image metabox.
  *
@@ -99,7 +97,7 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
  */
 function afi_save_thumbnail( $post_id ) {
 
-    if ( ! $_POST ) {
+    if ( ! isset( $_POST['afi-img-src'] ) ) {
 
         return;
 
@@ -123,6 +121,7 @@ function afi_save_thumbnail( $post_id ) {
 
     // Flag to track if we have switched to another site.
     $switchedBlog = false;
+    $switchedCount = 0;
 
     // If the image was not found, we need to look on other blog sites.
     if ( is_multisite() && ! $imageID ) {
@@ -145,6 +144,7 @@ function afi_save_thumbnail( $post_id ) {
 
              // Track that we have switched sites.
              $switchedBlog = true;
+             $switchedCount++;
 
              // Get the image id on this latest site.
              $imageID = afi_get_attachment_id_from_url( $imageURL );
@@ -164,9 +164,14 @@ function afi_save_thumbnail( $post_id ) {
         // The Image was not found on our sites. It must be an image from another site.
         // Let's download it and save it in our main site
         
-        if( is_multisite() && $currentBlogID != AFI_MAIN_SITE_ID ){
-            switch_to_blog( AFI_MAIN_SITE_ID );
-            $switchedBlog = true;
+        if( is_multisite() && $switchedBlog == true ){
+
+            for ($i = 0; $i < $switchedCount; $i++) { 
+                restore_current_blog(); //Restore for each switch
+            } 
+
+            // We have restored
+            $switchedBlog = false;
         }
         
         $imageID = afi_save_external_image( $imageURL );
@@ -231,10 +236,13 @@ function afi_save_thumbnail( $post_id ) {
     } 
      
     // Return to the current site, if we switched during checking for images.
-    if ( $switchedBlog ) {
+    if( is_multisite() && $switchedBlog == true ){
 
-        restore_current_blog();
+        for ($i = 0; $i < $switchedCount; $i++) { 
+            restore_current_blog(); //Restore for each switch
+        } 
 
+        $switchedBlog = false;
     }
     
     // Save images to post meta data.

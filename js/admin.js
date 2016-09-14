@@ -89,6 +89,8 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
     $uploadImage.addClass( 'hidden' );
 }
 
+
+
 (function( $ ) {
     'use strict';
    
@@ -99,41 +101,61 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
             afi_upload_custom_image = $( '.upload-custom-img' ),
             inputField = $( '.afi-img-id' );
          
-        function set_uploader( ) {
+       
+        // Make sure both the button and the field exist.
+        if ( afi_upload_custom_image && inputField ) {
 
+            // Show the thick box when the button is clicked.
+            afi_upload_custom_image.on( 'click', function() {
 
-            // Make sure both the button and the field exist.
-            if ( afi_upload_custom_image && inputField ) {
-
-                // Show the thick box when the button is clicked.
-                afi_upload_custom_image.on( 'click', function() {
-
-                    afi_renderMediaUploader( $, afi_custom_image_container, inputField, afi_upload_custom_image, afi_delete_custom_image );
-                     
-                });
-            }
-
-        }
-
-       function remove_image() {
-
-            $( afi_delete_custom_image ).on( 'click', function( event ) {
+                afi_renderMediaUploader( $, afi_custom_image_container, inputField, afi_upload_custom_image, afi_delete_custom_image );
                  
-                event.preventDefault();
-
-                afi_custom_image_container.empty();
-
-                inputField.val( '' );
-
-                afi_delete_custom_image.addClass( 'hidden' );
-                afi_upload_custom_image.removeClass( 'hidden' );
-
             });
 
+            /**
+             * Replacing old thickbox functionality used by Network Shared Media
+             */
+        
+                // Store the original send_to_event function
+                window.original_send_to_editor = window.send_to_editor;
+
+                // Override the function send_to_event so you can have multiple uploaders pre page
+                window.send_to_editor = function(html) {
+
+                    // HTML provided is an img element itself
+                    var imgurl = $( 'img', html ).attr('src');
+
+                    //If imgurl is undefined, then there is only one img from link
+                    if(typeof imgurl == 'undefined'){
+                        imgurl = $( html ).attr('src');
+                    }
+
+                    inputField.val(imgurl);
+                    afi_custom_image_container.append("<img src='"+imgurl+"' style='max-width:100%;' />");
+                    afi_delete_custom_image.removeClass("hidden");
+                    afi_upload_custom_image.addClass("hidden");
+                    // Remove the thickbox
+                    tb_remove();
+
+
+                    // Set normal uploader for editor
+                    window.send_to_editor = window.original_send_to_editor;
+                };
         }
 
-        set_uploader();
-        remove_image();
+        // Handle removing image
+        afi_delete_custom_image.on( 'click', function( event ) {
+             
+            event.preventDefault();
+
+            afi_custom_image_container.empty();
+
+            inputField.val( '' );
+
+            afi_delete_custom_image.addClass( 'hidden' );
+            afi_upload_custom_image.removeClass( 'hidden' );
+
+        });
 
     });
 
