@@ -98,13 +98,23 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
 
 }
 
+/**
+ * Creating the image and appending it to the image container. Getting the image URL
+ * and adding it as value to the input field.
+ *
+ * @param  object imageContainer jQuery object of the image container to display image
+ * @param  object uploadImage    jQuery object of the upload image container (displayed when there is no image)
+ * @param  object deleteImage    jQuery object of the delete image container (displayed when we uploaded the image)
+ * @param  object json           Attachment JSON
+ * @param  object inputField     jQuery object of the input field to store image
+ * @return void
+ */
 function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputField){
 	$imageContainer.append( '<img src="' + json.url + '" alt="' + json.caption + '" style="max-width: 100%;" />' );
 	inputField.val( json.url );
 	$deleteImage.removeClass( 'hidden' );
 	$uploadImage.addClass( 'hidden' );
 }
-
 
 
 (function( $ ) {

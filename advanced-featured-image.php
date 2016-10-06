@@ -139,6 +139,17 @@ function afi_save_thumbnail( $post_id ) {
 		delete_post_meta( $post_id, '_afi_image' );
 		delete_post_meta( $post_id, '_afi_img_src' );
 		delete_post_meta( $post_id, '_thumbnail_id' );
+		// Getting all the posts that use the AFI image.
+		$posts_with_afi = get_option( 'posts_with_afi_image', array() );
+
+		// Deleting the post ID since it is not using the AFI image anymore.
+		if ( in_array( $post_id, $posts_with_afi, true ) ) {
+			$index = array_search( $post_id, $posts_with_afi, true );
+			unset( $posts_with_afi[ $index ] );
+			// Reindexing the array.
+			$posts_with_afi = array_values( $posts_with_afi );
+			update_option( 'posts_with_afi_image', $posts_with_afi );
+		}
 		return;
 
 	}
@@ -297,6 +308,13 @@ function afi_save_external_image( $url ) {
 	$basename = $real_file['basename'];
 	$extension = $real_file['extension'];
 	$allowed_extensions = array( 'jpg', 'png', 'gif' );
+
+	$extension_query_position = strpos( $extension, '?' );
+	// If our extension has some query strings, we must clear it.
+	if ( false !== $extension_query_position ) {
+		// Getting only the extension by using the query string start as length.
+		$extension = substr( $extension, 0, $extension_query_position );
+	}
 
 	if ( ! in_array( strtolower( $extension ), $allowed_extensions, true ) ) {
 		return 0;
