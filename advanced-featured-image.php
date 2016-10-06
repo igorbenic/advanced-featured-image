@@ -100,15 +100,11 @@ add_action( 'admin_enqueue_scripts', 'afi_scripts' );
 function afi_save_thumbnail( $post_id ) {
 
 	if ( ! isset( $_POST['afi_metabox_nonce'] ) ) { // WPCS: input var okay.
-
 		return;
-
 	}
 
 	if ( ! wp_verify_nonce( sanitize_key( $_POST['afi_metabox_nonce'] ), 'afi_metabox_' . $post_id ) ) { // WPCS: input var okay.
-
 		return;
-
 	}
 
 	// Check if user has permissions to save data.
@@ -127,9 +123,7 @@ function afi_save_thumbnail( $post_id ) {
 	}
 
 	if ( ! isset( $_POST['afi-img-src'] ) ) { // WPCS: input var okay.
-
 		return;
-
 	}
 
 	$image_url = sanitize_text_field( wp_unslash( $_POST['afi-img-src'] ) ); // WPCS: input var okay.
@@ -174,18 +168,43 @@ function afi_save_thumbnail( $post_id ) {
 				'spam' => 0,
 				'deleted' => 0,
 			);
-		$sites = wp_get_sites( $sites_args );
+
+		$sites = null;
+		$deprecated = true;
+
+		// WordPress 4.6 and up. We will not use the deprecated function.
+		if ( function_exists( 'get_sites' ) && class_exists( 'WP_Site_Query' ) ) {
+			$deprecated = false;
+		}
+
+		// WordPress 4.6 and up.
+		if ( ! $deprecated ) {
+			$sites = get_sites( $sites_args );
+		} else {
+			// WordPress below 4.6.
+			$sites = wp_get_sites( $sites_args );
+		}
 
 		foreach ( $sites as $site ) {
 
+			$site_id = 0;
+
+			// WordPress 4.6 and up.
+			if ( ! $deprecated ) {
+				$site_id = $site->blog_id;
+			} else {
+				// WordPress below 4.6.
+				$site_id = $site['blog_id'];
+			}
+
 			// Skip the site if it is current site we already checked above.
-			if ( $site['blog_id'] === $current_blog_id ) {
+			if ( $site_id === $current_blog_id ) {
 
 				continue;
 			}
 
 			// Switch to the new site.
-			switch_to_blog( $site['blog_id'] );
+			switch_to_blog( $site_id );
 
 			// Track that we have switched sites.
 			$switched_blog = true;
@@ -238,10 +257,6 @@ function afi_save_thumbnail( $post_id ) {
 			'height' => $image_meta_data['height'],
 		);
 
-		$available_sizes = array();
-		$largest_available_size = array();
-		$largest_available_width = 0;
-
 		// Add each generated size of the original image to the array of sizes.
 		foreach ( $image_meta_data['sizes'] as $size => $size_info ) {
 
@@ -252,15 +267,6 @@ function afi_save_thumbnail( $post_id ) {
 				'width'  => $size_info['width'],
 				'height' => $size_info['height'],
 			);
-
-			if ( $largest_available_width < (int) $size_info['width'] ) {
-
-				$largest_available_size = $images[ $size ];
-				$largest_available_width = (int) $size_info['width'];
-
-			}
-
-			$available_sizes[] = $size;
 
 		}
 	}

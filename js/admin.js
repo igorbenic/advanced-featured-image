@@ -16,19 +16,19 @@
  * @param  object deleteImage    jQuery object of the delete image container (displayed when we uploaded the image)
  * @return void
  */
-function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, deleteImage ) {
+function afiRenderMediaUploader( $, imageContainer, inputField, uploadImage, deleteImage ) {
 	'use strict';
 
-	var file_frame, image_data;
+	var fileFrame, imageData;
 
 	/**
-	 * If an instance of file_frame already exists, then we can open it
+	 * If an instance of fileFrame already exists, then we can open it
 	 * rather than creating a new instance.
 	 */
 
-	if ( undefined !== file_frame ) {
+	if ( undefined !== fileFrame ) {
 
-		file_frame.open();
+		fileFrame.open();
 
 		return;
 
@@ -45,14 +45,14 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
 	 *
 	 * We're also not allowing the user to select more than one image.
 	 */
-	file_frame = wp.media({
+	fileFrame = wp.media({
 		frame: 'post',
 		multiple: false,
 	});
 
-	file_frame.on( 'select', function( selection ){
+	fileFrame.on( 'select', function( selection ){
 
-		var state = file_frame.state();
+		var state = fileFrame.state();
 		var id = state.get( 'id' );
 		var type = state.get( 'type' );
 		var image = null;
@@ -64,7 +64,7 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
 		}
 
 		if ( image && image.url ) {
-			createImage( imageContainer, deleteImage, uploadImage, image, inputField );
+			afiCreateImage( imageContainer, deleteImage, uploadImage, image, inputField );
 		}
 
 	});
@@ -74,12 +74,12 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
 	 * selected.
 	 *
 	 * Since we're using the 'view' state when initializing
-	 * the file_frame, we need to make sure that the handler is attached
+	 * the fileFrame, we need to make sure that the handler is attached
 	 * to the insert event.
 	 */
-	file_frame.on( 'insert', function( selection ) {
+	fileFrame.on( 'insert', function( selection ) {
 
-		var state = file_frame.state();
+		var state = fileFrame.state();
 		// Read the JSON data returned from the Media Uploader.
 		var json = state.attributes.selection.single().toJSON();
 
@@ -89,12 +89,12 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
 		}
 
 		// After that, set the properties of the image and display it.
-		createImage( imageContainer, deleteImage, uploadImage, json, inputField );
+		afiCreateImage( imageContainer, deleteImage, uploadImage, json, inputField );
 
 	});
 
-	// Now display the actual file_frame.
-	file_frame.open();
+	// Now display the actual fileFrame.
+	fileFrame.open();
 
 }
 
@@ -109,7 +109,7 @@ function afi_renderMediaUploader( $, imageContainer, inputField, uploadImage, de
  * @param  object inputField     jQuery object of the input field to store image
  * @return void
  */
-function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputField){
+function afiCreateImage( $imageContainer, $deleteImage, $uploadImage, json, inputField){
 	$imageContainer.append( '<img src="' + json.url + '" alt="' + json.caption + '" style="max-width: 100%;" />' );
 	inputField.val( json.url );
 	$deleteImage.removeClass( 'hidden' );
@@ -122,18 +122,18 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
 
 	$( document ).ready(function(){
 
-		var afi_custom_image_container = $( '#custom_image_container' ),
-			afi_delete_custom_image = $( '.delete-custom-img' ),
-			afi_upload_custom_image = $( '.upload-custom-img' ),
-			inputField = $( '.afi-img-id' );
+		var afiCustomImageContainer = $( '#custom_image_container' ),
+				afiDeleteCustomImage = $( '.delete-custom-img' ),
+				afiUploadCustomImage = $( '.upload-custom-img' ),
+				inputField = $( '.afi-img-id' );
 
 		// Make sure both the button and the field exist.
-		if ( afi_upload_custom_image && inputField ) {
+		if ( afiUploadCustomImage && inputField ) {
 
 			// Show the thick box when the button is clicked.
-			afi_upload_custom_image.on( 'click', function() {
+			afiUploadCustomImage.on( 'click', function() {
 
-				afi_renderMediaUploader( $, afi_custom_image_container, inputField, afi_upload_custom_image, afi_delete_custom_image );
+				afiRenderMediaUploader( $, afiCustomImageContainer, inputField, afiUploadCustomImage, afiDeleteCustomImage );
 
 			});
 
@@ -156,9 +156,9 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
 				}
 
 				inputField.val( imgurl );
-				afi_custom_image_container.append( "<img src='" + imgurl + "' style='max-width:100%;' />" );
-				afi_delete_custom_image.removeClass( "hidden" );
-				afi_upload_custom_image.addClass( "hidden" );
+				afiCustomImageContainer.append( "<img src='" + imgurl + "' style='max-width:100%;' />" );
+				afiDeleteCustomImage.removeClass( "hidden" );
+				afiUploadCustomImage.addClass( "hidden" );
 				// Remove the thickbox.
 				tb_remove();
 
@@ -168,16 +168,16 @@ function createImage( $imageContainer, $deleteImage, $uploadImage, json, inputFi
 		}
 
 		// Handle removing image.
-		afi_delete_custom_image.on( 'click', function( event ) {
+		afiDeleteCustomImage.on( 'click', function( event ) {
 
 			event.preventDefault();
 
-			afi_custom_image_container.empty();
+			afiCustomImageContainer.empty();
 
 			inputField.val( '' );
 
-			afi_delete_custom_image.addClass( 'hidden' );
-			afi_upload_custom_image.removeClass( 'hidden' );
+			afiDeleteCustomImage.addClass( 'hidden' );
+			afiUploadCustomImage.removeClass( 'hidden' );
 
 		});
 
