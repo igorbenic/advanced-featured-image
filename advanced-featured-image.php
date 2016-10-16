@@ -82,7 +82,7 @@ function afi_metabox( $content, $post_id ) {
 add_filter( 'admin_post_thumbnail_html', 'afi_metabox', 1, 2 );
 
 /**
- * JavaScript for the advanced featured image metabox.
+ * Loads the JavaScript for the advanced featured image metabox.
  */
 function afi_scripts() {
 
@@ -393,6 +393,7 @@ function afi_save_external_image( $url ) {
 
 	// Set as post thumbnail if desired.
 	return $att_id;
+
 }
 
 /**
