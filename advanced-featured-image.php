@@ -140,7 +140,7 @@ function afi_save_thumbnail( $post_id ) {
 
 	$image_url = sanitize_text_field( wp_unslash( $_POST['afi-img-src'] ) );
 
-	if ( '' === $image_url ) {
+	if ( empty( $image_url ) ) {
 
 		delete_post_meta( $post_id, '_afi_image' );
 		delete_post_meta( $post_id, '_afi_img_src' );
@@ -412,7 +412,7 @@ function afi_get_attachment_id_from_url( $attachment_url = '' ) {
 	$attachment_id = false;
 
 	// Exit if there is no url.
-	if ( '' === $attachment_url ) {
+	if ( empty( $attachment_url ) ) {
 
 		return;
 
