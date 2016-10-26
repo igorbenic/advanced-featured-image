@@ -39,7 +39,7 @@
 		 *
 		 * We're also not allowing the user to select more than one image.
 		 */
-		fileFrame = wp.media({
+		fileFrame = wp.media( {
 			frame: 'post',
 			multiple: false
 		} );
